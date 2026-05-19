@@ -1,9 +1,9 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { ReactFlow, Background, Controls, Handle, Position } from "reactflow";
 import "reactflow/dist/style.css";
 
 import { severityColors } from "../constants/severityColors";
-import sampleGraph from "../mock/sampleGraph.json";
+import NodeInspector from "./NodeInspector";
 
 function PackageNode({ data }) {
   const color = severityColors[data.severity] || severityColors.none;
@@ -28,21 +28,38 @@ function PackageNode({ data }) {
 
 const nodeTypes = { packageNode: PackageNode };
 
-export default function DependencyGraph() {
-  const [nodes] = useState(sampleGraph.nodes);
-  const [edges] = useState(sampleGraph.edges);
+export default function DependencyGraph({ data }) {
+  const [nodes, setNodes] = useState([]);
+  const [edges, setEdges] = useState([]);
+  const [selectedNode, setSelectedNode] = useState(null);
+
+  useEffect(() => {
+    if (data) {
+      setNodes(data.nodes || []);
+      setEdges(data.edges || []);
+    }
+  }, [data]);
+
+  const onNodeClick = useCallback((_event, node) => {
+    setSelectedNode(node.data);
+  }, []);
 
   return (
-    <div style={{ width: "100%", height: "100vh" }}>
+    <div style={{ width: "100%", height: "100vh", position: "relative" }}>
       <ReactFlow
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        onNodeClick={onNodeClick}
         fitView
       >
         <Background />
         <Controls />
       </ReactFlow>
+      <NodeInspector
+        nodeData={selectedNode}
+        onClose={() => setSelectedNode(null)}
+      />
     </div>
   );
 }

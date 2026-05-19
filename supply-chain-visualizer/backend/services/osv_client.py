@@ -27,12 +27,14 @@ def _infer_ecosystem(purl_id: str) -> Optional[str]:
 
 
 def _query_osv(name: str, version: str, ecosystem: Optional[str] = None) -> list[dict]:
-    package = {"name": name}
+    package: dict[str, str] = {"name": name}
     if ecosystem:
         package["ecosystem"] = ecosystem
 
     with httpx.Client(timeout=HTTP_TIMEOUT) as client:
-        resp = client.post(OSV_API_URL, json={"package": package, "version": version})
+        resp = client.post(
+            OSV_API_URL, json={"package": package, "version": version}
+        )
         resp.raise_for_status()
         data = resp.json()
 
@@ -69,7 +71,7 @@ def check_vulnerabilities(
 
         if key in _cache:
             cached = _cache[key]
-            if cached is not None:
+            if cached.cve_id is not None:
                 results[node.id] = cached
             continue
 
@@ -84,7 +86,9 @@ def check_vulnerabilities(
             else:
                 _cache[key] = VulnerabilityInfo()
         except Exception:
-            logger.exception("Failed to check vulnerabilities for %s@%s", node.name, node.version)
+            logger.exception(
+                "Failed to check vulnerabilities for %s@%s", node.name, node.version
+            )
             _cache[key] = VulnerabilityInfo()
 
     return results

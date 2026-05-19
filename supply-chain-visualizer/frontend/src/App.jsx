@@ -1,5 +1,14 @@
+import { useState } from "react";
+import UploadModal from "./components/UploadModal";
 import DependencyGraph from "./components/DependencyGraph";
 
 export default function App() {
-  return <DependencyGraph />;
+  const [graphData, setGraphData] = useState(null);
+
+  return (
+    <>
+      <UploadModal onUpload={setGraphData} />
+      {graphData && <DependencyGraph data={graphData} />}
+    </>
+  );
 }
