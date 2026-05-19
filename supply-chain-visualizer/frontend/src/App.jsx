@@ -1,9 +1,15 @@
 import { useState } from "react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+
+import LandingPage from "./components/LandingPage";
 import UploadModal from "./components/UploadModal";
 import RiskSummary from "./components/RiskSummary";
 import DependencyGraph from "./components/DependencyGraph";
 
-export default function App() {
+/* ═══════════════════════════════════════════════════════════════════════════
+   APP DASHBOARD — The main analysis workspace (route: /app)
+   ═══════════════════════════════════════════════════════════════════════════ */
+function Dashboard() {
   const [graphData, setGraphData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
@@ -37,29 +43,38 @@ export default function App() {
     });
   };
 
+  const isUploaded = !!graphData;
+
   return (
-    <div style={{ fontFamily: "system-ui, sans-serif" }}>
-      <UploadModal
-        onUpload={handleUpload}
-        onLoadingChange={setIsLoading}
-        onError={handleError}
-      />
+    <div
+      className={`min-h-screen w-full ${!isUploaded ? "flex flex-col items-center justify-center" : ""}`}
+      style={{
+        fontFamily: "var(--font-sans, 'Inter', system-ui, sans-serif)",
+        background: "var(--bg-primary)",
+      }}
+    >
+      {!isUploaded && (
+        <UploadModal
+          onUpload={handleUpload}
+          onLoadingChange={setIsLoading}
+          onError={handleError}
+        />
+      )}
 
       {isLoading && (
-        <div style={{ textAlign: "center", padding: 40 }}>
+        <div className="flex flex-col items-center justify-center py-16">
           <div
+            className="w-9 h-9 rounded-full mb-3"
             style={{
-              width: 36,
-              height: 36,
-              border: "4px solid #e2e8f0",
-              borderTopColor: "#1e293b",
-              borderRadius: "50%",
+              border: "3px solid var(--border)",
+              borderTopColor: "var(--color-accent)",
               animation: "spin 0.8s linear infinite",
-              margin: "0 auto 12px",
             }}
           />
-          <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
-          <p style={{ color: "#475569", fontSize: 15 }}>
+          <p
+            className="text-sm font-medium"
+            style={{ color: "var(--foreground-secondary)" }}
+          >
             Analyzing dependencies...
           </p>
         </div>
@@ -67,14 +82,8 @@ export default function App() {
 
       {error && graphData && (
         <p
-          style={{
-            textAlign: "center",
-            color: "#16a34a",
-            fontSize: 15,
-            fontWeight: 600,
-            margin: 0,
-            padding: "8px 0",
-          }}
+          className="text-center text-sm font-semibold py-2"
+          style={{ color: "#16a34a" }}
         >
           {error}
         </p>
@@ -82,16 +91,11 @@ export default function App() {
 
       {error && !graphData && (
         <div
+          className="max-w-md mx-auto my-4 px-5 py-3 rounded-lg text-center text-sm"
           style={{
-            maxWidth: 500,
-            margin: "16px auto",
-            padding: "12px 20px",
-            background: "#fef2f2",
-            border: "1px solid #fecaca",
-            borderRadius: 8,
-            color: "#b91c1c",
-            fontSize: 14,
-            textAlign: "center",
+            background: "rgba(239, 68, 68, 0.08)",
+            border: "1px solid rgba(239, 68, 68, 0.2)",
+            color: "#ef4444",
           }}
         >
           {error}
@@ -105,5 +109,19 @@ export default function App() {
         </>
       )}
     </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   ROOT APP — Router shell
+   ═══════════════════════════════════════════════════════════════════════════ */
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/app" element={<Dashboard />} />
+      </Routes>
+    </BrowserRouter>
   );
 }

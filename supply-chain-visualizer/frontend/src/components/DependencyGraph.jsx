@@ -1,69 +1,135 @@
 import { useCallback, useEffect, useState } from "react";
-import { ReactFlow, Background, Controls, Handle, Position } from "reactflow";
+import {
+  ReactFlow,
+  Background,
+  Controls,
+  Handle,
+  Position,
+  useReactFlow,
+  ReactFlowProvider,
+} from "reactflow";
 import "reactflow/dist/style.css";
 
 import { severityColors } from "../constants/severityColors";
 import { layoutNodes } from "../utils/graphLayout";
 import NodeInspector from "./NodeInspector";
 
+/* ─── Severity legend data — visual only ─── */
 const severityLabels = [
   { label: "Critical", key: "critical" },
-  { label: "High", key: "high" },
-  { label: "Medium", key: "medium" },
-  { label: "Low", key: "low" },
-  { label: "None", key: "none" },
+  { label: "High",     key: "high"     },
+  { label: "Medium",   key: "medium"   },
+  { label: "Low",      key: "low"      },
+  { label: "None",     key: "none"     },
 ];
 
-function PackageNode({ data }) {
-  const color = severityColors[data.severity] || severityColors.none;
+/* ═══════════════════════════════════════════════════════════════════════════
+   CUSTOM PACKAGE NODE — visual card replacing default React Flow box
+   Logic: Handle positions and data reading are unchanged
+   ═══════════════════════════════════════════════════════════════════════════ */
+function PackageNode({ data, selected }) {
+  const borderColor = severityColors[data.severity] || severityColors.none;
+
   return (
     <div
       style={{
-        border: `2px solid ${color}`,
-        borderRadius: 8,
+        background: "var(--node-bg)",
+        border: `2px solid ${borderColor}`,
+        borderRadius: 12,
         padding: "10px 16px",
-        background: "#fff",
         minWidth: 140,
+        maxWidth: 200,
         textAlign: "center",
-        transition: "transform 0.2s, box-shadow 0.2s",
+        boxShadow: selected
+          ? `0 0 0 3px ${borderColor}40, var(--shadow-md)`
+          : "var(--shadow-card)",
+        transition: "box-shadow 0.2s",
         cursor: "pointer",
+        fontFamily: "var(--font-sans)",
       }}
       onMouseEnter={(e) => {
-        e.currentTarget.style.transform = "scale(1.05)";
-        e.currentTarget.style.boxShadow = `0 4px 14px ${color}66`;
+        e.currentTarget.style.boxShadow = `0 4px 16px ${borderColor}55, var(--shadow-md)`;
       }}
       onMouseLeave={(e) => {
-        e.currentTarget.style.transform = "scale(1)";
-        e.currentTarget.style.boxShadow = "none";
+        e.currentTarget.style.boxShadow = selected
+          ? `0 0 0 3px ${borderColor}40, var(--shadow-md)`
+          : "var(--shadow-card)";
       }}
     >
-      <Handle type="target" position={Position.Top} />
-      <div style={{ fontWeight: 600, fontSize: 14 }}>{data.label}</div>
-      <div style={{ fontSize: 12, color: "#64748b" }}>{data.version}</div>
-      <Handle type="source" position={Position.Bottom} />
+      <Handle type="target" position={Position.Top} style={{ opacity: 0 }} />
+      <div
+        style={{
+          fontWeight: 600,
+          fontSize: 12,
+          color: "var(--text-primary)",
+          lineHeight: 1.3,
+          wordBreak: "break-word",
+        }}
+      >
+        {data.label}
+      </div>
+      <div
+        style={{
+          fontSize: 10,
+          color: "var(--text-muted)",
+          fontFamily: "ui-monospace, monospace",
+          marginTop: 3,
+        }}
+      >
+        {data.version}
+      </div>
+      {data.severity && data.severity !== "none" && (
+        <div
+          style={{
+            display: "inline-block",
+            marginTop: 6,
+            padding: "1px 7px",
+            borderRadius: 99,
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: "0.04em",
+            textTransform: "uppercase",
+            color: "#fff",
+            background: borderColor,
+          }}
+        >
+          {data.severity}
+        </div>
+      )}
+      <Handle type="source" position={Position.Bottom} style={{ opacity: 0 }} />
     </div>
   );
 }
 
 const nodeTypes = { packageNode: PackageNode };
 
-export default function DependencyGraph({ data, onInsightGenerated }) {
+/* ═══════════════════════════════════════════════════════════════════════════
+   INNER GRAPH — needs ReactFlowProvider to use useReactFlow
+   All data handling, layout, state logic is unchanged
+   ═══════════════════════════════════════════════════════════════════════════ */
+function GraphInner({ data, onInsightGenerated }) {
   const [nodes, setNodes] = useState([]);
   const [edges, setEdges] = useState([]);
   const [selectedNode, setSelectedNode] = useState(null);
+  const { fitView } = useReactFlow();
 
+  /* unchanged data/layout effect */
   useEffect(() => {
     if (data) {
       const positioned = layoutNodes(data.nodes || [], data.edges || []);
       setNodes(positioned);
       setEdges(data.edges || []);
+      /* fitView is purely visual — called after layout is computed */
+      setTimeout(() => fitView({ padding: 0.2, duration: 600 }), 50);
     }
-  }, [data]);
+  }, [data, fitView]);
 
+  /* unchanged node click handler */
   const onNodeClick = useCallback((_event, node) => {
     setSelectedNode(node);
   }, []);
 
+  /* unchanged insight propagation */
   const handleInsightGenerated = useCallback(
     (nodeId, insight) => {
       setNodes((prev) =>
@@ -76,44 +142,66 @@ export default function DependencyGraph({ data, onInsightGenerated }) {
     [onInsightGenerated]
   );
 
+  /* visual edge style */
+  const styledEdges = edges.map((e) => ({
+    ...e,
+    style: { stroke: "var(--text-muted)", strokeWidth: 1.5 },
+  }));
+
   return (
-    <div style={{ width: "100%", height: "100vh", position: "relative" }}>
+    <div style={{ width: "100%", height: "calc(100vh - 180px)", minHeight: 500, position: "relative" }}>
       <ReactFlow
         nodes={nodes}
-        edges={edges}
+        edges={styledEdges}
         nodeTypes={nodeTypes}
         onNodeClick={onNodeClick}
         fitView
+        proOptions={{ hideAttribution: true }}
       >
-        <Background />
-        <Controls />
+        <Background
+          color="var(--border)"
+          gap={24}
+          size={1}
+          style={{ opacity: 0.5 }}
+        />
+        <Controls
+          style={{
+            bottom: 16,
+            left: 16,
+            top: "unset",
+          }}
+        />
       </ReactFlow>
 
+      {/* ── Severity legend — top-right, glassmorphic card ── */}
       <div
         style={{
           position: "absolute",
-          bottom: 24,
-          left: 24,
-          background: "#fff",
-          border: "1px solid #e2e8f0",
-          borderRadius: 8,
-          padding: "10px 14px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.08)",
+          top: 16,
+          right: 16,
           zIndex: 10,
+          background: "var(--bg-surface)",
+          border: "1px solid var(--border)",
+          borderRadius: 12,
+          padding: "12px 16px",
+          boxShadow: "var(--shadow-card)",
+          backdropFilter: "blur(12px)",
+          WebkitBackdropFilter: "blur(12px)",
+          minWidth: 130,
         }}
       >
-        <div
+        <p
           style={{
-            fontSize: 11,
-            fontWeight: 600,
-            color: "#64748b",
+            fontSize: 9,
+            fontWeight: 700,
+            letterSpacing: "0.08em",
             textTransform: "uppercase",
-            letterSpacing: 1,
-            marginBottom: 6,
+            color: "var(--text-muted)",
+            marginBottom: 8,
           }}
         >
           Severity
-        </div>
+        </p>
         {severityLabels.map((s) => (
           <div
             key={s.key}
@@ -122,17 +210,19 @@ export default function DependencyGraph({ data, onInsightGenerated }) {
               alignItems: "center",
               gap: 8,
               fontSize: 12,
-              color: "#334155",
-              marginBottom: 3,
+              color: "var(--text-secondary)",
+              marginBottom: 5,
+              fontFamily: "var(--font-sans)",
             }}
           >
             <span
               style={{
-                width: 10,
-                height: 10,
+                width: 8,
+                height: 8,
                 borderRadius: "50%",
                 background: severityColors[s.key],
                 display: "inline-block",
+                flexShrink: 0,
               }}
             />
             {s.label}
@@ -140,6 +230,7 @@ export default function DependencyGraph({ data, onInsightGenerated }) {
         ))}
       </div>
 
+      {/* ── Node inspector side-sheet ── */}
       <NodeInspector
         nodeData={selectedNode ? selectedNode.data : null}
         nodeId={selectedNode ? selectedNode.id : null}
@@ -147,5 +238,16 @@ export default function DependencyGraph({ data, onInsightGenerated }) {
         onInsightGenerated={handleInsightGenerated}
       />
     </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   EXPORTED COMPONENT — wraps GraphInner in ReactFlowProvider
+   ═══════════════════════════════════════════════════════════════════════════ */
+export default function DependencyGraph({ data, onInsightGenerated }) {
+  return (
+    <ReactFlowProvider>
+      <GraphInner data={data} onInsightGenerated={onInsightGenerated} />
+    </ReactFlowProvider>
   );
 }
