@@ -75,9 +75,8 @@ export default function UploadModal({ onUpload, onLoadingChange, onError }) {
           </p>
         </div>
 
-        {/* ── Drop zone ── VISUAL WRAPPER ONLY, real input stays below ── */}
+        {/* ── Drop zone ── VISUAL WRAPPER ONLY, real input catches clicks ── */}
         <div
-          onClick={() => inputRef.current?.click()}
           onDragOver={handleDragOver}
           onDragLeave={handleDragLeave}
           onDrop={handleDrop}
@@ -91,7 +90,7 @@ export default function UploadModal({ onUpload, onLoadingChange, onError }) {
             transition: "border-color 0.2s, background 0.2s",
           }}
         >
-          {/* Hidden real input — logic unchanged */}
+          {/* Hidden real input — covers entire area natively */}
           <input
             ref={inputRef}
             type="file"
@@ -104,6 +103,7 @@ export default function UploadModal({ onUpload, onLoadingChange, onError }) {
               width: "100%",
               height: "100%",
               cursor: "pointer",
+              zIndex: 10,
             }}
           />
 

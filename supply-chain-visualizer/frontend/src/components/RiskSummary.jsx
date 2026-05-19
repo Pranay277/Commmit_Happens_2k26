@@ -1,5 +1,3 @@
-import { jsPDF } from "jspdf";
-import autoTable from "jspdf-autotable";
 import {
   AlertTriangle,
   Flame,
@@ -9,8 +7,6 @@ import {
   Layers,
   TrendingUp,
   Activity,
-  FileJson,
-  FileText,
 } from "lucide-react";
 
 /* ─── ALL COMPUTATION LOGIC IS UNTOUCHED ─── */
@@ -37,93 +33,7 @@ export default function RiskSummary({ data }) {
   }
   cumulativeRisk = Number(cumulativeRisk.toFixed(1));
 
-  const scanDate = new Date().toISOString();
-
-  const vulnerableTableRows = vulnerableNodes.map((n) => {
-    const d = n.data || {};
-    return [
-      d.label,
-      d.version,
-      d.severity,
-      d.cve || "—",
-      String(d.riskScore ?? "0"),
-      d.aiInsight || "Insight not requested during session",
-    ];
-  });
-
-  /* unchanged export handlers */
-  const exportJSON = () => {
-    const report = {
-      scanDate,
-      summary: {
-        totalDependencies: totalDeps,
-        totalVulnerabilities: totalVulns,
-        bySeverity: { ...severityCounts },
-        highestRisk,
-        cumulativeRisk,
-      },
-      vulnerableDependencies: vulnerableNodes.map((n) => {
-        const d = n.data || {};
-        return {
-          package: d.label,
-          version: d.version,
-          severity: d.severity,
-          cve: d.cve || null,
-          riskScore: d.riskScore ?? 0,
-          aiInsight: d.aiInsight || "Insight not requested during session",
-        };
-      }),
-    };
-    const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "sbom-security-report.json";
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const exportPDF = () => {
-    const doc = new jsPDF();
-    doc.setFontSize(18);
-    doc.text("SBOM Security Risk Report", 14, 22);
-    doc.setFontSize(11);
-    doc.text(`Generated: ${new Date(scanDate).toLocaleDateString()}`, 14, 32);
-    doc.setFontSize(13);
-    doc.text("Summary", 14, 46);
-    doc.setFontSize(11);
-    let sy = 54;
-    const summaryLines = [
-      `Total Dependencies: ${totalDeps}`,
-      `Total Vulnerabilities: ${totalVulns}`,
-      `Critical: ${severityCounts.critical} | High: ${severityCounts.high} | Medium: ${severityCounts.medium} | Low: ${severityCounts.low}`,
-      `Highest Risk Score: ${highestRisk} | Cumulative Risk: ${cumulativeRisk}`,
-    ];
-    for (const line of summaryLines) { doc.text(line, 14, sy); sy += 8; }
-
-    const pdfTableRows = vulnerableNodes.map((node) => {
-      const d = node.data || {};
-      let pdfSummary = "";
-      if (!d.aiInsight) {
-        pdfSummary = "Insight not requested during session";
-      } else {
-        const cleanInsight = d.aiInsight.replace(/[\*#_`]/g, "");
-        const sentenceMatch = cleanInsight.match(/[^.!?]+[.!?](\s+[^.!?]+[.!?])?/);
-        pdfSummary = sentenceMatch ? sentenceMatch[0].trim() : cleanInsight;
-      }
-      return [d.label, d.version, d.severity, d.cve || "—", String(d.riskScore ?? "0"), pdfSummary];
-    });
-
-    autoTable(doc, {
-      startY: sy + 4,
-      head: [["Package", "Version", "Severity", "CVE", "Risk Score", "AI Insight"]],
-      body: pdfTableRows,
-      styles: { fontSize: 10 },
-      headStyles: { fillColor: [30, 41, 59] },
-      columnStyles: { 5: { cellWidth: 60 } },
-    });
-    doc.save("sbom-security-report.pdf");
-  };
+  /* export handlers moved to DependencyGraph canvas */
 
   /* ── VISUAL ONLY: metric card config ── */
   const metricCards = [
@@ -188,13 +98,13 @@ export default function RiskSummary({ data }) {
       bg: highestRisk >= 7
         ? "rgba(239,68,68,0.06)"
         : highestRisk >= 4
-        ? "rgba(249,115,22,0.06)"
-        : "var(--bg-surface-2)",
+          ? "rgba(249,115,22,0.06)"
+          : "var(--bg-surface-2)",
       border: highestRisk >= 7
         ? "rgba(239,68,68,0.2)"
         : highestRisk >= 4
-        ? "rgba(249,115,22,0.2)"
-        : "var(--border)",
+          ? "rgba(249,115,22,0.2)"
+          : "var(--border)",
       iconColor: highestRisk >= 7 ? "#EF4444" : highestRisk >= 4 ? "#F97316" : "var(--text-muted)",
       textColor: highestRisk >= 7 ? "#EF4444" : highestRisk >= 4 ? "#F97316" : "var(--text-primary)",
     },
@@ -205,13 +115,13 @@ export default function RiskSummary({ data }) {
       bg: cumulativeRisk >= 10
         ? "rgba(239,68,68,0.06)"
         : cumulativeRisk >= 5
-        ? "rgba(249,115,22,0.06)"
-        : "var(--bg-surface-2)",
+          ? "rgba(249,115,22,0.06)"
+          : "var(--bg-surface-2)",
       border: cumulativeRisk >= 10
         ? "rgba(239,68,68,0.2)"
         : cumulativeRisk >= 5
-        ? "rgba(249,115,22,0.2)"
-        : "var(--border)",
+          ? "rgba(249,115,22,0.2)"
+          : "var(--border)",
       iconColor: cumulativeRisk >= 10 ? "#EF4444" : cumulativeRisk >= 5 ? "#F97316" : "var(--text-muted)",
       textColor: cumulativeRisk >= 10 ? "#EF4444" : cumulativeRisk >= 5 ? "#F97316" : "var(--text-primary)",
     },
@@ -221,86 +131,62 @@ export default function RiskSummary({ data }) {
     <div
       className="px-6 md:px-12"
       style={{
-        paddingTop: 20,
-        paddingBottom: 16,
+        paddingTop: 24,
+        paddingBottom: 24,
         background: "var(--bg-primary)",
         borderBottom: "1px solid var(--border)",
       }}
     >
+      {/* ── Header ── */}
+      <div className="flex items-center mb-5">
+        <h2 className="text-lg font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>
+          Security Posture
+        </h2>
+      </div>
+
       {/* ── Metrics Grid ── */}
       <div
-        className="grid gap-3"
-        style={{ gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))" }}
+        className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-8 gap-3 w-full"
       >
         {metricCards.map((m) => (
           <div
             key={m.label}
-            className="rounded-xl px-4 py-3 flex flex-col gap-2"
+            className="rounded-xl px-5 py-4 flex flex-col items-center justify-center text-center"
             style={{
               background: m.bg,
               border: `1px solid ${m.border}`,
-              minHeight: 80,
+              minHeight: 105,
+              boxShadow: "0 2px 12px rgba(0,0,0,0.03)",
+              transition: "transform 0.2s ease, box-shadow 0.2s ease",
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform = "translateY(-2px)";
+              e.currentTarget.style.boxShadow = "0 6px 16px rgba(0,0,0,0.06)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform = "translateY(0)";
+              e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.03)";
             }}
           >
-            <div className="flex items-center justify-between">
+            <div className="flex items-center justify-center gap-2">
               <span
-                className="text-[10px] font-semibold uppercase tracking-widest"
+                className="text-[11px] font-semibold uppercase tracking-wider"
                 style={{ color: "var(--text-muted)" }}
               >
                 {m.label}
               </span>
-              <m.icon size={13} style={{ color: m.iconColor, opacity: 0.8 }} />
+              <m.icon size={16} style={{ color: m.iconColor, opacity: 0.9 }} />
             </div>
-            <span
-              className="text-2xl font-bold tabular-nums leading-none"
-              style={{ color: m.textColor }}
-            >
-              {m.value}
-            </span>
+            <div className="mt-3 text-center">
+              <span
+                className="text-3xl font-bold tabular-nums leading-none tracking-tight"
+                style={{ color: m.textColor }}
+              >
+                {m.value}
+              </span>
+            </div>
           </div>
         ))}
-      </div>
-
-      {/* ── Export buttons ── */}
-      <div className="flex items-center gap-2.5 mt-4">
-        <button
-          onClick={exportJSON}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold"
-          style={{
-            background: "var(--text-primary)",
-            color: "var(--bg-surface)",
-            border: "none",
-            cursor: "pointer",
-            transition: "opacity 0.15s",
-          }}
-          onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.85"; }}
-          onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
-        >
-          <FileJson size={13} />
-          Export JSON
-        </button>
-        <button
-          onClick={exportPDF}
-          className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold"
-          style={{
-            background: "transparent",
-            color: "var(--text-primary)",
-            border: "1px solid var(--border)",
-            cursor: "pointer",
-            transition: "border-color 0.15s, background 0.15s",
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = "var(--text-muted)";
-            e.currentTarget.style.background = "var(--bg-surface-2)";
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = "var(--border)";
-            e.currentTarget.style.background = "transparent";
-          }}
-        >
-          <FileText size={13} />
-          Export PDF
-        </button>
       </div>
     </div>
   );

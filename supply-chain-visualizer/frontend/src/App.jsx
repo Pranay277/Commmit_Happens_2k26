@@ -1,10 +1,11 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 
 import LandingPage from "./components/LandingPage";
 import UploadModal from "./components/UploadModal";
 import RiskSummary from "./components/RiskSummary";
 import DependencyGraph from "./components/DependencyGraph";
+import ErrorBoundary from "./components/ErrorBoundary";
 
 /* ═══════════════════════════════════════════════════════════════════════════
    APP DASHBOARD — The main analysis workspace (route: /app)
@@ -14,22 +15,47 @@ function Dashboard() {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const handleUpload = (result) => {
-    setGraphData(result);
-    const hasVulns = (result.nodes || []).some(
-      (n) => n.data && n.data.severity && n.data.severity !== "none"
-    );
-    if (!hasVulns) {
-      setError("Zero vulnerabilities detected in current scope.");
-    } else {
-      setError("");
+  const handleUpload = useCallback((result) => {
+    const rawNodes = result?.nodes ?? [];
+    const rawEdges = result?.edges ?? [];
+    if (!rawNodes.length && !rawEdges.length) {
+      setError("No dependency data found in the uploaded file.");
+      setGraphData(null);
+      return;
     }
-  };
+    const safeData = {
+      nodes: rawNodes.map((n, i) => ({
+        id: String(n?.id ?? `node-${i}`),
+        type: "packageNode",
+        data: {
+          label: n?.data?.label ?? n?.id ?? `Node ${i}`,
+          version: n?.data?.version ?? "0.0.0",
+          severity: n?.data?.severity ?? "none",
+          cve: n?.data?.cve ?? null,
+          riskScore: Number(n?.data?.riskScore) || 0,
+          description: n?.data?.description ?? "",
+          aiInsight: n?.data?.aiInsight ?? null,
+        },
+      })),
+      edges: rawEdges.map((e, i) => ({
+        id: String(e?.id ?? `edge-${i}`),
+        source: String(e?.source ?? ""),
+        target: String(e?.target ?? ""),
+      })),
+    };
+    setGraphData(safeData);
+    const hasVulns = safeData.nodes.some(
+      (n) => n.data?.severity && n.data.severity !== "none"
+    );
+    setError(
+      hasVulns ? "" : "Zero vulnerabilities detected in current scope."
+    );
+  }, []);
 
-  const handleError = (msg) => {
+  const handleError = useCallback((msg) => {
     setError(msg);
     setGraphData(null);
-  };
+  }, []);
 
   const handleInsightGenerated = (nodeId, insight) => {
     setGraphData((prev) => {
@@ -103,10 +129,14 @@ function Dashboard() {
       )}
 
       {graphData && (
-        <>
-          <RiskSummary data={graphData} />
-          <DependencyGraph data={graphData} onInsightGenerated={handleInsightGenerated} />
-        </>
+        <ErrorBoundary
+          onReset={() => { setGraphData(null); setError(""); }}
+        >
+          <div className="w-full px-6 md:px-10">
+            <RiskSummary data={graphData} />
+            <DependencyGraph data={graphData} onInsightGenerated={handleInsightGenerated} />
+          </div>
+        </ErrorBoundary>
       )}
     </div>
   );

@@ -1,16 +1,3 @@
-<div align="center">
-  <img src="https://img.shields.io/badge/Status-Active-success?style=for-the-badge" alt="Status" />
-  <img src="https://img.shields.io/badge/Security-OSV-blue?style=for-the-badge" alt="Security API" />
-  <img src="https://img.shields.io/badge/AI-Ollama_Llama3-orange?style=for-the-badge" alt="AI Engine" />
-  <img src="https://img.shields.io/badge/License-MIT-purple?style=for-the-badge" alt="License" />
-
-  <h1>🛡️ ShieldGraph — Supply Chain Vulnerability Visualizer</h1>
-  <p><strong>Enterprise-Grade Software Supply Chain Security & Dependency Analysis Platform</strong></p>
-  <p><i>A powerful, local-first visualization tool that parses CycloneDX SBOMs, detects deeply nested vulnerabilities using the OSV database, and generates AI-powered remediation advice completely offline.</i></p>
-</div>
-
-<br />
-
 ## 📖 Project Overview
 
 Modern software is built on thousands of open-source dependencies. A single vulnerable transitive dependency can compromise an entire enterprise infrastructure. **ShieldGraph** (SBOM-Based Supply Chain Vulnerability Visualizer) is a cutting-edge cybersecurity platform designed to map, analyze, and secure your software supply chain. 
