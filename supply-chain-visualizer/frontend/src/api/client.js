@@ -13,4 +13,9 @@ export async function uploadSbom(file) {
   return data;
 }
 
+export async function fetchAiInsight(context) {
+  const { data } = await api.post("/api/ai-insight", context);
+  return data;
+}
+
 export default api;
