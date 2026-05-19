@@ -1,0 +1,8 @@
+{
+  "python.analysis.extraPaths": [
+    "./supply-chain-visualizer/backend"
+  ],
+  "python.autoComplete.extraPaths": [
+    "./supply-chain-visualizer/backend"
+  ]
+}
