@@ -1,5 +1,5 @@
-import UploadModal from "./components/UploadModal";
+import DependencyGraph from "./components/DependencyGraph";
 
 export default function App() {
-  return <UploadModal />;
+  return <DependencyGraph />;
 }
