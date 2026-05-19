@@ -8,7 +8,7 @@ import { severityColors } from "../constants/severityColors";
 /* ─── Markdown renderer — styled to match design system ─── */
 const mdComponents = {
   p: ({ children }) => (
-    <p style={{ margin: "0 0 8px", lineHeight: 1.65, color: "var(--text-secondary)", fontSize: 13 }}>
+    <p style={{ margin: "0 0 8px", lineHeight: 1.75, color: "#475569", fontSize: 13 }}>
       {children}
     </p>
   ),
@@ -19,22 +19,22 @@ const mdComponents = {
     <ol style={{ paddingLeft: 18, margin: "0 0 8px" }}>{children}</ol>
   ),
   li: ({ children }) => (
-    <li style={{ marginBottom: 4, fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6 }}>
+    <li style={{ marginBottom: 4, fontSize: 13, color: "#475569", lineHeight: 1.7 }}>
       {children}
     </li>
   ),
   strong: ({ children }) => (
-    <strong style={{ color: "var(--text-primary)", fontWeight: 600 }}>{children}</strong>
+    <strong style={{ color: "#0F172A", fontWeight: 700 }}>{children}</strong>
   ),
   code: ({ children }) => (
     <code
       style={{
         fontFamily: "ui-monospace, monospace",
         fontSize: 11,
-        background: "var(--bg-surface-2)",
+        background: "rgba(59,130,246,0.08)",
         padding: "1px 5px",
         borderRadius: 4,
-        color: "var(--accent)",
+        color: "#2563EB",
       }}
     >
       {children}
@@ -126,18 +126,17 @@ export default function NodeInspector({ nodeData, nodeId, onClose, onInsightGene
 
       {/* ── Side-sheet panel ── */}
       <div
+        className="shadow-2xl rounded-xl border border-slate-200 dark:border-slate-800"
         style={{
           position: "absolute",
-          top: 0,
-          right: 0,
-          bottom: 0,
-          width: 340,
-          zIndex: 20,
+          top: "16px",
+          right: "16px",
+          width: "400px",
+          maxHeight: "calc(100% - 32px)",
+          zIndex: 50,
           display: "flex",
           flexDirection: "column",
           background: "var(--bg-surface)",
-          borderLeft: "1px solid var(--border)",
-          boxShadow: "-4px 0 24px rgba(0,0,0,0.12)",
           fontFamily: "var(--font-sans)",
           overflowY: "auto",
         }}
@@ -380,12 +379,16 @@ export default function NodeInspector({ nodeData, nodeId, onClose, onInsightGene
               {/* Result */}
               {aiInsight && (
                 <div
+                  className="break-words"
                   style={{
-                    background: "var(--bg-surface-2)",
-                    border: "1px solid var(--border)",
+                    background: "rgba(59,130,246,0.04)",
+                    border: "1px solid rgba(59,130,246,0.15)",
+                    borderLeft: "4px solid #3B82F6",
                     borderRadius: 10,
                     padding: "14px 16px",
                     lineHeight: 1.6,
+                    overflowWrap: "anywhere",
+                    wordBreak: "break-word",
                   }}
                 >
                   <ReactMarkdown components={mdComponents}>{aiInsight}</ReactMarkdown>

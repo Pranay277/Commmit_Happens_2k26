@@ -33,7 +33,7 @@ function DotGrid() {
         animate={{ opacity: 0.35 }}
         transition={{ duration: 1.5 }}
       />
-      {/* Soft ambient glow */}
+
       <div
         className="absolute pointer-events-none"
         style={{
@@ -77,8 +77,10 @@ function FeatureCard({ icon: Icon, title, description, accentColor, delay }) {
       className="group w-full h-full"
     >
       <div
-        className="surface-card p-8 h-full min-h-[240px] flex flex-col items-center text-center justify-start relative overflow-hidden"
-        style={{ transition: "all 0.25s var(--ease-smooth)" }}
+        className="surface-card p-8 h-full flex flex-col items-center justify-center text-center gap-4 relative overflow-hidden"
+        style={{
+          transition: "all 0.25s var(--ease-smooth)",
+        }}
         onMouseEnter={(e) => {
           e.currentTarget.style.transform = "translateY(-4px)";
           e.currentTarget.style.boxShadow = "var(--shadow-lg)";
@@ -90,14 +92,15 @@ function FeatureCard({ icon: Icon, title, description, accentColor, delay }) {
           e.currentTarget.style.borderColor = "var(--border)";
         }}
       >
-        {/* Top glow line */}
         <div
           className="absolute top-0 left-0 right-0 h-px opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-          style={{ background: `linear-gradient(90deg, transparent, ${accentColor}, transparent)` }}
+          style={{
+            background: `linear-gradient(90deg, transparent, ${accentColor}, transparent)`,
+          }}
         />
 
         <div
-          className="flex items-center justify-center w-12 h-12 rounded-2xl mb-6"
+          className="flex items-center justify-center w-12 h-12 rounded-2xl"
           style={{
             background: `${accentColor}12`,
             border: `1px solid ${accentColor}20`,
@@ -106,10 +109,17 @@ function FeatureCard({ icon: Icon, title, description, accentColor, delay }) {
           <Icon size={20} style={{ color: accentColor }} />
         </div>
 
-        <h3 className="text-base font-bold mb-3" style={{ color: "var(--text-primary)" }}>
+        <h3
+          className="text-base font-bold"
+          style={{ color: "var(--text-primary)" }}
+        >
           {title}
         </h3>
-        <p className="text-sm leading-relaxed" style={{ color: "var(--text-muted)" }}>
+
+        <p
+          className="text-sm leading-relaxed text-center"
+          style={{ color: "var(--text-muted)" }}
+        >
           {description}
         </p>
       </div>
@@ -128,10 +138,14 @@ function TechBadge({ label, value }) {
     >
       <span
         className="text-sm font-bold tracking-tight"
-        style={{ color: "var(--text-primary)", fontFamily: "var(--font-sans)" }}
+        style={{
+          color: "var(--text-primary)",
+          fontFamily: "var(--font-sans)",
+        }}
       >
         {value}
       </span>
+
       <span
         className="text-[10px] uppercase tracking-widest font-medium mt-0.5"
         style={{ color: "var(--text-muted)" }}
@@ -149,7 +163,10 @@ export default function LandingPage() {
   const navigate = useNavigate();
 
   return (
-    <div className="relative min-h-screen flex flex-col" style={{ background: "var(--bg-primary)" }}>
+    <div
+      className="relative min-h-screen flex flex-col"
+      style={{ background: "var(--bg-primary)" }}
+    >
       <DotGrid />
 
       {/* ── NAVBAR ── */}
@@ -168,26 +185,47 @@ export default function LandingPage() {
       >
         <div className="flex items-center gap-2.5">
           <Shield size={20} style={{ color: "var(--accent)" }} />
-          <span className="text-sm font-bold tracking-tight" style={{ color: "var(--text-primary)" }}>
+
+          <span
+            className="text-sm font-bold tracking-tight"
+            style={{ color: "var(--text-primary)" }}
+          >
             ShieldGraph
           </span>
         </div>
+
         <div className="flex items-center gap-3">
           <ThemeToggle />
+
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => navigate("/app")}
-            className="flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold cursor-pointer whitespace-nowrap w-fit flex-shrink-0"
+            className="flex items-center gap-2 px-4 h-9 rounded-xl text-sm font-medium cursor-pointer whitespace-nowrap"
             style={{
-              background: "var(--accent)",
-              color: "#fff",
-              border: "none",
-              boxShadow: "0 1px 6px var(--accent-glow)",
-              transition: "background 0.2s",
+              background:
+                "linear-gradient(135deg, #0EA5E9, #0284C7)",
+              color: "#ffffff",
+              border: "1px solid rgba(255,255,255,0.08)",
+              boxShadow:
+                "0 4px 14px rgba(14,165,233,0.28)",
+              transition: "all 0.2s ease",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
             }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "var(--accent-hover)"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "var(--accent)"; }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.transform =
+                "translateY(-1px)";
+              e.currentTarget.style.boxShadow =
+                "0 8px 18px rgba(14,165,233,0.35)";
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.transform =
+                "translateY(0px)";
+              e.currentTarget.style.boxShadow =
+                "0 4px 14px rgba(14,165,233,0.28)";
+            }}
           >
             Launch App
             <ArrowRight size={12} />
@@ -197,7 +235,7 @@ export default function LandingPage() {
 
       {/* ── HERO ── */}
       <main className="relative z-10 flex-1 w-full flex flex-col items-center justify-center px-6 pt-20 pb-16 text-center">
-        {/* Trust pill */}
+
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
@@ -210,25 +248,32 @@ export default function LandingPage() {
           }}
         >
           <Lock size={11} style={{ color: "var(--accent)" }} />
-          <span className="text-[11px] font-medium tracking-wide" style={{ color: "var(--text-muted)" }}>
+
+          <span
+            className="text-[11px] font-medium tracking-wide"
+            style={{ color: "var(--text-muted)" }}
+          >
             100% Local Execution · Zero Cloud Dependencies
           </span>
         </motion.div>
 
-        {/* Headline — clean, high-contrast, no gradient */}
         <motion.h1
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.6, delay: 0.25 }}
           className="text-center max-w-4xl text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight"
-          style={{ color: "var(--text-primary)", lineHeight: 1.15 }}
+          style={{
+            color: "var(--text-primary)",
+            lineHeight: 1.15,
+          }}
         >
           Visualize Your Software Supply Chain.
           <br />
-          <span style={{ color: "var(--accent)" }}>Expose Hidden Vulnerabilities.</span>
+          <span style={{ color: "var(--accent)" }}>
+            Expose Hidden Vulnerabilities.
+          </span>
         </motion.h1>
 
-        {/* Subheadline */}
         <motion.p
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
@@ -241,20 +286,19 @@ export default function LandingPage() {
           advice using Llama 3 — entirely offline.
         </motion.p>
 
-        {/* CTA + Badge wrapper */}
         <motion.div
           initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.55 }}
           className="flex flex-col items-center gap-10 mt-8 w-full"
         >
-          {/* CTA row - FIXED WITH FLEX-WRAP */}
           <div className="flex flex-row flex-wrap items-center justify-center gap-6 w-full">
+
             <motion.button
               whileHover={{ scale: 1.03, y: -1 }}
               whileTap={{ scale: 0.97 }}
               onClick={() => navigate("/app")}
-              className="flex items-center gap-2 px-6 py-2.5 rounded-full text-sm font-semibold cursor-pointer whitespace-nowrap w-fit flex-shrink-0"
+              className="inline-flex items-center justify-center px-6 py-2.5 rounded-full text-sm font-medium whitespace-nowrap cursor-pointer"
               style={{
                 background: "var(--accent)",
                 color: "#fff",
@@ -271,7 +315,7 @@ export default function LandingPage() {
               href="https://cyclonedx.org/"
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium cursor-pointer whitespace-nowrap w-fit flex-shrink-0"
+              className="inline-flex items-center justify-center px-6 py-2.5 rounded-full text-sm font-medium whitespace-nowrap cursor-pointer"
               style={{
                 background: "var(--bg-surface)",
                 color: "var(--text-primary)",
@@ -284,7 +328,6 @@ export default function LandingPage() {
             </motion.a>
           </div>
 
-          {/* Tech badge row */}
           <div
             className="inline-flex items-center justify-center flex-wrap rounded-2xl overflow-hidden"
             style={{
@@ -294,11 +337,26 @@ export default function LandingPage() {
             }}
           >
             <TechBadge value="OSV" label="Database" />
-            <div className="w-px h-8" style={{ background: "var(--border)" }} />
+
+            <div
+              className="w-px h-8"
+              style={{ background: "var(--border)" }}
+            />
+
             <TechBadge value="Llama 3" label="Local AI" />
-            <div className="w-px h-8" style={{ background: "var(--border)" }} />
+
+            <div
+              className="w-px h-8"
+              style={{ background: "var(--border)" }}
+            />
+
             <TechBadge value="CycloneDX" label="Standard" />
-            <div className="w-px h-8 hidden sm:block" style={{ background: "var(--border)" }} />
+
+            <div
+              className="w-px h-8 hidden sm:block"
+              style={{ background: "var(--border)" }}
+            />
+
             <div className="hidden sm:block">
               <TechBadge value="100%" label="Offline" />
             </div>
@@ -307,8 +365,9 @@ export default function LandingPage() {
       </main>
 
       {/* ── FEATURES ── */}
-      <section className="relative z-10 w-full flex justify-center px-6 py-20">
-        <div className="w-full max-w-5xl flex flex-col items-center">
+      <section className="relative z-10 w-full flex justify-center px-6 py-24">
+        <div className="w-full max-w-6xl flex flex-col items-center">
+
           <motion.div
             initial={{ opacity: 0 }}
             whileInView={{ opacity: 1 }}
@@ -317,54 +376,66 @@ export default function LandingPage() {
             className="flex flex-col items-center text-center max-w-3xl w-full mx-auto"
           >
             <span
-              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold tracking-widest uppercase mb-4"
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold tracking-widest uppercase mb-5"
               style={{
                 background: "var(--bg-surface-2)",
                 color: "var(--text-muted)",
                 border: "1px solid var(--border)",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
               }}
             >
               <Zap size={10} />
               Core Capabilities
             </span>
+
             <h2
-              className="text-2xl sm:text-3xl font-semibold tracking-tight text-center w-full"
-              style={{ color: "var(--text-primary)" }}
+              className="text-3xl sm:text-4xl font-bold tracking-tight text-center w-full"
+              style={{
+                color: "var(--text-primary)",
+                lineHeight: 1.1,
+              }}
             >
               Enterprise-Grade Security Analysis
             </h2>
+
             <p
-              className="mt-3 max-w-lg mx-auto text-center text-sm leading-relaxed"
-              style={{ color: "var(--text-muted)" }}
+              className="mt-4 max-w-2xl mx-auto text-center text-sm sm:text-base leading-relaxed"
+              style={{
+                color: "var(--text-muted)",
+              }}
             >
-              Three pillars of supply chain intelligence, running entirely on your
+              Analyze software supply chains, detect vulnerable dependencies,
+              and generate AI-powered remediation insights entirely on your
               local infrastructure.
             </p>
           </motion.div>
 
-          {/* Centered Symmetric Grid */}
-          <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+          <div className="w-full grid grid-cols-1 md:grid-cols-3 gap-7 mt-16">
+
             <FeatureCard
               icon={GitBranch}
-              title="React Flow Canvas"
-              description="Beautifully untangle complex nested package dependency trees with auto-layout algorithms. Zoom, pan, and inspect any node."
+              title="Interactive Dependency Graph"
+              description="Visualize deep software trust chains with an intelligent React Flow canvas designed for modern supply-chain security analysis."
               accentColor="#0EA5E9"
               delay={0.1}
             />
+
             <FeatureCard
               icon={Brain}
-              title="Ollama + Llama 3 Integration"
-              description="Generate localized security insights and remediation suggestions on demand with zero external API dependencies."
+              title="Local AI Security Intelligence"
+              description="Leverage Ollama + Llama 3 to generate private, on-device vulnerability explanations and remediation guidance without cloud exposure."
               accentColor="#8B5CF6"
               delay={0.2}
             />
+
             <FeatureCard
               icon={FileSearch}
-              title="CycloneDX Ingestion"
-              description="Seamless validation of software components, versions, and licenses against live OSV vulnerability databases."
+              title="Real-Time Vulnerability Detection"
+              description="Analyze CycloneDX SBOM files against live OSV threat intelligence feeds to identify vulnerable dependencies instantly."
               accentColor="#10B981"
               delay={0.3}
             />
+
           </div>
         </div>
       </section>
@@ -372,7 +443,10 @@ export default function LandingPage() {
       {/* ── FOOTER ── */}
       <footer
         className="relative z-10 py-8 text-center"
-        style={{ borderTop: "1px solid var(--border)", color: "var(--text-muted)" }}
+        style={{
+          borderTop: "1px solid var(--border)",
+          color: "var(--text-muted)",
+        }}
       >
         <p className="text-xs">
           Built with React · FastAPI · Ollama · React Flow — 100% local, zero telemetry.
