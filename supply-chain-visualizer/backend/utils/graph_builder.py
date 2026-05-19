@@ -1,4 +1,5 @@
 from models.schemas import DependencyEdge, PackageNode, VulnerabilityInfo
+from services.risk_engine import calculate_risk_score
 
 
 def _compute_layout(
@@ -52,6 +53,7 @@ def build_react_flow_graph(
     for n in sbom_nodes:
         vuln = vulnerabilities.get(n.id)
         severity = (vuln.severity or "none").lower() if vuln else "none"
+        risk_score = calculate_risk_score(severity)
         pos = positions.get(n.id, {"x": 0, "y": 0})
         flow_nodes.append(
             {
@@ -64,7 +66,8 @@ def build_react_flow_graph(
                     "severity": severity,
                     "cve": (vuln.cve_id or "") if vuln else "",
                     "description": (vuln.description or "") if vuln else "",
-                    "riskScore": 0,
+                    "riskScore": risk_score,
+                    "aiInsight": (vuln.ai_insight or "") if (vuln and vuln.ai_insight) else "",
                 },
             }
         )

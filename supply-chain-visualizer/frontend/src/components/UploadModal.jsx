@@ -1,55 +1,75 @@
 import { useState } from "react";
 import { uploadSbom } from "../api/client";
 
-export default function UploadModal({ onUpload }) {
+export default function UploadModal({ onUpload, onLoadingChange, onError }) {
   const [file, setFile] = useState(null);
-  const [isLoading, setIsLoading] = useState(false);
-  const [successMessage, setSuccessMessage] = useState("");
-  const [error, setError] = useState("");
+  const [localSuccess, setLocalSuccess] = useState("");
 
   const handleFileChange = (e) => {
     setFile(e.target.files[0] || null);
-    setSuccessMessage("");
-    setError("");
+    setLocalSuccess("");
+    if (onError) onError("");
   };
 
   const handleUpload = async () => {
-    if (!file) {
-      setError("Please select a file first");
-      return;
-    }
-    setIsLoading(true);
-    setError("");
-    setSuccessMessage("");
+    if (!file) return;
+    if (onLoadingChange) onLoadingChange(true);
+    if (onError) onError("");
+    setLocalSuccess("");
+
     try {
       const result = await uploadSbom(file);
-      setSuccessMessage(result.message);
+      setLocalSuccess(result.message);
       if (onUpload) onUpload(result);
     } catch (err) {
-      const detail =
-        err.response?.data?.detail || err.message || "Upload failed";
-      setError(detail);
+      const msg = "Invalid SBOM format. Please upload a valid CycloneDX JSON.";
+      if (onError) onError(msg);
     } finally {
-      setIsLoading(false);
+      if (onLoadingChange) onLoadingChange(false);
     }
   };
 
   return (
-    <div style={{ padding: 24, maxWidth: 480, margin: "0 auto" }}>
-      <h2>Upload SBOM</h2>
+    <div
+      style={{
+        padding: "24px 32px",
+        maxWidth: 600,
+        margin: "40px auto",
+        textAlign: "center",
+      }}
+    >
+      <h2 style={{ marginBottom: 8, color: "#1e293b" }}>Upload SBOM</h2>
+      <p style={{ fontSize: 14, color: "#64748b", marginBottom: 20 }}>
+        Select a CycloneDX JSON file to analyze
+      </p>
       <input
         type="file"
         accept=".json"
         onChange={handleFileChange}
-        disabled={isLoading}
+        style={{ marginBottom: 16 }}
       />
-      <button onClick={handleUpload} disabled={isLoading || !file}>
-        {isLoading ? "Uploading..." : "Upload"}
+      <br />
+      <button
+        onClick={handleUpload}
+        disabled={!file}
+        style={{
+          padding: "10px 28px",
+          fontSize: 14,
+          fontWeight: 600,
+          color: "#fff",
+          background: file ? "#1e293b" : "#94a3b8",
+          border: "none",
+          borderRadius: 6,
+          cursor: file ? "pointer" : "not-allowed",
+        }}
+      >
+        Upload
       </button>
-      {successMessage && (
-        <p style={{ color: "green" }}>{successMessage}</p>
+      {localSuccess && (
+        <p style={{ color: "#16a34a", marginTop: 12, fontSize: 14 }}>
+          {localSuccess}
+        </p>
       )}
-      {error && <p style={{ color: "red" }}>{error}</p>}
     </div>
   );
 }
