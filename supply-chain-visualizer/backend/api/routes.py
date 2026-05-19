@@ -2,7 +2,9 @@ import json
 
 from fastapi import APIRouter, File, HTTPException, UploadFile, status
 
+from services.osv_client import check_vulnerabilities
 from services.sbom_parser import parse_cyclonedx_sbom
+from utils.graph_builder import build_react_flow_graph
 
 router = APIRouter()
 
@@ -24,11 +26,12 @@ async def upload_sbom(file: UploadFile = File(...)):
         )
 
     parsed = parse_cyclonedx_sbom(data)
+    vulnerabilities = check_vulnerabilities(parsed.nodes)
+    graph = build_react_flow_graph(parsed.nodes, parsed.edges, vulnerabilities)
 
     return {
         "status": "success",
         "filename": file.filename,
         "message": "SBOM uploaded successfully",
-        "nodes": [n.model_dump() for n in parsed.nodes],
-        "edges": [e.model_dump() for e in parsed.edges],
+        **graph,
     }
