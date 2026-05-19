@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 
@@ -15,3 +17,9 @@ class DependencyEdge(BaseModel):
 class ParsedSBOM(BaseModel):
     nodes: list[PackageNode]
     edges: list[DependencyEdge]
+
+
+class VulnerabilityInfo(BaseModel):
+    cve_id: Optional[str] = None
+    severity: Optional[str] = None
+    description: Optional[str] = None
