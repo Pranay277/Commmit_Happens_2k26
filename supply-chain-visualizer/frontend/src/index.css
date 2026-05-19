@@ -1,0 +1,175 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap");
+@import "tailwindcss";
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   DESIGN SYSTEM — CSS Custom Properties
+   Enterprise-grade token system · Shadcn / Vercel / Linear inspired
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+@theme {
+  --font-sans: "Inter", "SF Pro Display", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --color-accent: #0EA5E9;
+  --color-accent-hover: #0284C7;
+  --color-severity-critical: #EF4444;
+  --color-severity-high: #F97316;
+  --color-severity-medium: #EAB308;
+  --color-severity-low: #3B82F6;
+  --color-severity-none: #94A3B8;
+  --ease-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+
+  /* Map CSS Custom variables to Tailwind utility classes */
+  --color-bg-primary: var(--bg-primary);
+  --color-bg-surface: var(--bg-surface);
+  --color-bg-surface-2: var(--bg-surface-2);
+
+  --color-primary: var(--text-primary);
+  --color-secondary: var(--text-secondary);
+  --color-muted: var(--text-muted);
+  --color-text-primary: var(--text-primary);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
+  --color-border-custom: var(--border);
+  --color-border-subtle: var(--border-subtle);
+}
+
+/* ── Light Theme ── */
+:root {
+  --bg-primary: #F8FAFC;
+  --bg-surface: #FFFFFF;
+  --bg-surface-2: #F1F5F9;
+  --text-primary: #0F172A;
+  --text-secondary: #334155;
+  --text-muted: #64748B;
+  --border: #E2E8F0;
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --ring: rgba(15, 23, 42, 0.08);
+  --accent: #0EA5E9;
+  --accent-hover: #0284C7;
+  --accent-glow: rgba(14, 165, 233, 0.15);
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.4);
+  --input-bg: #F1F5F9;
+  --input-border: #CBD5E1;
+  --skeleton-base: #E2E8F0;
+  --skeleton-shine: #F1F5F9;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.06);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.06);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.08);
+  --radius-card: 16px;
+  --node-bg: #FFFFFF;
+  --node-border: #E2E8F0;
+  --graph-bg: #F8FAFC;
+}
+
+/* ── Dark Theme — Deep Cybersecurity Palette ── */
+.dark {
+  --bg-primary: #0B1120;
+  --bg-surface: #111827;
+  --bg-surface-2: #1E293B;
+  --text-primary: #F1F5F9;
+  --text-secondary: #CBD5E1;
+  --text-muted: #94A3B8;
+  --border: #1E293B;
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --ring: rgba(255, 255, 255, 0.08);
+  --accent: #38BDF8;
+  --accent-hover: #7DD3FC;
+  --accent-glow: rgba(56, 189, 248, 0.2);
+  --glass-bg: rgba(11, 17, 32, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --input-bg: #1E293B;
+  --input-border: #334155;
+  --skeleton-base: #1E293B;
+  --skeleton-shine: #334155;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.3), 0 4px 16px rgba(0,0,0,0.4);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 30px rgba(0, 0, 0, 0.5);
+  --node-bg: #111827;
+  --node-border: #1E293B;
+  --graph-bg: #0B1120;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   BASE STYLES
+   ═══════════════════════════════════════════════════════════════════════════ */
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  transition: background-color 0.3s var(--ease-smooth), color 0.3s var(--ease-smooth);
+  line-height: 1.6;
+}
+
+::selection {
+  background-color: var(--accent);
+  color: white;
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UTILITY CLASSES
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+.glass {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px) saturate(1.8);
+  -webkit-backdrop-filter: blur(16px) saturate(1.8);
+  border: 1px solid var(--glass-border);
+}
+
+.surface-card {
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  transition: all 0.2s var(--ease-smooth);
+}
+
+/* Skeleton loader */
+@keyframes skeleton-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+.skeleton {
+  background: linear-gradient(90deg, var(--skeleton-base) 25%, var(--skeleton-shine) 50%, var(--skeleton-base) 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s ease-in-out infinite;
+  border-radius: 6px;
+}
+
+/* Dot-grid background */
+.grid-pattern {
+  background-image: radial-gradient(circle, var(--border-subtle) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+/* Spinner */
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   REACT FLOW OVERRIDES
+   ═══════════════════════════════════════════════════════════════════════════ */
+.react-flow__background { background-color: var(--graph-bg) !important; }
+.react-flow__minimap { background-color: var(--bg-surface) !important; border: 1px solid var(--border) !important; border-radius: 8px !important; }
+.react-flow__controls { border: 1px solid var(--border) !important; border-radius: 8px !important; overflow: hidden; box-shadow: var(--shadow-md) !important; }
+.react-flow__controls-button { background-color: var(--bg-surface) !important; border-bottom: 1px solid var(--border) !important; fill: var(--text-muted) !important; }
+.react-flow__controls-button:hover { background-color: var(--bg-surface-2) !important; }
+.react-flow__edge-path { stroke: var(--text-muted) !important; stroke-width: 1.5 !important; }
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   SCROLLBAR
+   ═══════════════════════════════════════════════════════════════════════════ */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background-color: var(--text-muted); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background-color: var(--text-secondary); }

@@ -1,21 +1,80 @@
 import { useState, useEffect } from "react";
 import ReactMarkdown from "react-markdown";
+import { X, Sparkles, Loader2, ShieldAlert, Package, Hash, Tag, BarChart2, FileText } from "lucide-react";
 
 import { fetchAiInsight } from "../api/client";
 import { severityColors } from "../constants/severityColors";
 
+/* ─── Markdown renderer — styled to match design system ─── */
 const mdComponents = {
-  p: ({ children }) => <p style={{ margin: "0 0 8px", lineHeight: 1.6 }}>{children}</p>,
-  ul: ({ children }) => <ul style={{ paddingLeft: 20, margin: "0 0 8px" }}>{children}</ul>,
-  ol: ({ children }) => <ol style={{ paddingLeft: 20, margin: "0 0 8px" }}>{children}</ol>,
-  li: ({ children }) => <li style={{ marginBottom: 4 }}>{children}</li>,
-  strong: ({ children }) => <strong style={{ color: "#1e293b", fontWeight: 700 }}>{children}</strong>,
+  p: ({ children }) => (
+    <p style={{ margin: "0 0 8px", lineHeight: 1.65, color: "var(--text-secondary)", fontSize: 13 }}>
+      {children}
+    </p>
+  ),
+  ul: ({ children }) => (
+    <ul style={{ paddingLeft: 18, margin: "0 0 8px" }}>{children}</ul>
+  ),
+  ol: ({ children }) => (
+    <ol style={{ paddingLeft: 18, margin: "0 0 8px" }}>{children}</ol>
+  ),
+  li: ({ children }) => (
+    <li style={{ marginBottom: 4, fontSize: 13, color: "var(--text-secondary)", lineHeight: 1.6 }}>
+      {children}
+    </li>
+  ),
+  strong: ({ children }) => (
+    <strong style={{ color: "var(--text-primary)", fontWeight: 600 }}>{children}</strong>
+  ),
+  code: ({ children }) => (
+    <code
+      style={{
+        fontFamily: "ui-monospace, monospace",
+        fontSize: 11,
+        background: "var(--bg-surface-2)",
+        padding: "1px 5px",
+        borderRadius: 4,
+        color: "var(--accent)",
+      }}
+    >
+      {children}
+    </code>
+  ),
 };
 
+/* ─── Small label+value field row ─── */
+function InfoRow({ icon: Icon, label, children }) {
+  return (
+    <div style={{ marginBottom: 14 }}>
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 5,
+          fontSize: 9,
+          fontWeight: 700,
+          letterSpacing: "0.08em",
+          textTransform: "uppercase",
+          color: "var(--text-muted)",
+          marginBottom: 4,
+        }}
+      >
+        {Icon && <Icon size={10} />}
+        {label}
+      </div>
+      {children}
+    </div>
+  );
+}
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   NODE INSPECTOR — all AI fetch logic and state is UNTOUCHED
+   ═══════════════════════════════════════════════════════════════════════════ */
 export default function NodeInspector({ nodeData, nodeId, onClose, onInsightGenerated }) {
   const [aiInsight, setAiInsight] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  /* unchanged effect */
   useEffect(() => {
     setAiInsight(null);
     setLoading(false);
@@ -26,6 +85,7 @@ export default function NodeInspector({ nodeData, nodeId, onClose, onInsightGene
   const color = severityColors[nodeData.severity] || severityColors.none;
   const hasVuln = nodeData.severity && nodeData.severity !== "none";
 
+  /* unchanged async handler */
   const handleGenerateInsight = async () => {
     setLoading(true);
     setAiInsight(null);
@@ -43,255 +103,298 @@ export default function NodeInspector({ nodeData, nodeId, onClose, onInsightGene
         onInsightGenerated(nodeId, insight);
       }
     } catch {
-      setAiInsight("AI insight generation timed out. Please try refreshing or check local system resources.");
+      setAiInsight(
+        "AI insight generation timed out. Please try refreshing or check local system resources."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
-      style={{
-        position: "absolute",
-        top: 16,
-        right: 16,
-        width: 320,
-        maxHeight: "90vh",
-        overflowY: "auto",
-        padding: 20,
-        background: "#fff",
-        border: "1px solid #e2e8f0",
-        borderRadius: 10,
-        boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-        zIndex: 10,
-        fontFamily: "system-ui, sans-serif",
-      }}
-    >
+    <>
+      {/* ── Backdrop (mobile) ── */}
+      <div
+        onClick={onClose}
+        style={{
+          position: "absolute",
+          inset: 0,
+          zIndex: 19,
+          display: "none", // shown via media query if needed; desktop uses side-sheet
+        }}
+      />
+
+      {/* ── Side-sheet panel ── */}
       <div
         style={{
+          position: "absolute",
+          top: 0,
+          right: 0,
+          bottom: 0,
+          width: 340,
+          zIndex: 20,
           display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          marginBottom: 16,
+          flexDirection: "column",
+          background: "var(--bg-surface)",
+          borderLeft: "1px solid var(--border)",
+          boxShadow: "-4px 0 24px rgba(0,0,0,0.12)",
+          fontFamily: "var(--font-sans)",
+          overflowY: "auto",
         }}
       >
-        <strong style={{ fontSize: 16 }}>Node Details</strong>
-        <button
-          onClick={onClose}
-          style={{
-            background: "none",
-            border: "none",
-            cursor: "pointer",
-            fontSize: 18,
-            color: "#64748b",
-          }}
-        >
-          &times;
-        </button>
-      </div>
-
-      <div style={{ marginBottom: 12 }}>
+        {/* ── Header ── */}
         <div
           style={{
-            fontSize: 11,
-            color: "#94a3b8",
-            textTransform: "uppercase",
-            letterSpacing: 1,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            padding: "16px 20px",
+            borderBottom: "1px solid var(--border)",
+            position: "sticky",
+            top: 0,
+            background: "var(--bg-surface)",
+            zIndex: 1,
           }}
         >
-          Package
-        </div>
-        <div style={{ fontSize: 14, fontWeight: 600 }}>{nodeData.label}</div>
-      </div>
-
-      <div style={{ marginBottom: 12 }}>
-        <div
-          style={{
-            fontSize: 11,
-            color: "#94a3b8",
-            textTransform: "uppercase",
-            letterSpacing: 1,
-          }}
-        >
-          Version
-        </div>
-        <div style={{ fontSize: 14 }}>{nodeData.version}</div>
-      </div>
-
-      <div style={{ marginBottom: 12 }}>
-        <div
-          style={{
-            fontSize: 11,
-            color: "#94a3b8",
-            textTransform: "uppercase",
-            letterSpacing: 1,
-          }}
-        >
-          Severity
-        </div>
-        <span
-          style={{
-            display: "inline-block",
-            padding: "2px 10px",
-            borderRadius: 12,
-            fontSize: 12,
-            fontWeight: 600,
-            color: "#fff",
-            backgroundColor: color,
-          }}
-        >
-          {nodeData.severity}
-        </span>
-      </div>
-
-      <div style={{ marginBottom: 12 }}>
-        <div
-          style={{
-            fontSize: 11,
-            color: "#94a3b8",
-            textTransform: "uppercase",
-            letterSpacing: 1,
-          }}
-        >
-          CVE ID
-        </div>
-        <div style={{ fontSize: 14 }}>{nodeData.cve || "None"}</div>
-      </div>
-
-      <div style={{ marginBottom: 12 }}>
-        <div
-          style={{
-            fontSize: 11,
-            color: "#94a3b8",
-            textTransform: "uppercase",
-            letterSpacing: 1,
-          }}
-        >
-          Risk Score
-        </div>
-        <div style={{ fontSize: 14 }}>{nodeData.riskScore ?? "0"}</div>
-      </div>
-
-      <div style={{ marginBottom: 16 }}>
-        <div
-          style={{
-            fontSize: 11,
-            color: "#94a3b8",
-            textTransform: "uppercase",
-            letterSpacing: 1,
-          }}
-        >
-          Description
-        </div>
-        <div style={{ fontSize: 13, color: "#334155", lineHeight: 1.4 }}>
-          {nodeData.description || "No description available"}
-        </div>
-      </div>
-
-      {hasVuln && (
-        <div style={{ marginTop: 20 }}>
-          <div
-            style={{
-              fontSize: 11,
-              color: "#6b7280",
-              fontWeight: 700,
-              textTransform: "uppercase",
-              letterSpacing: "0.05em",
-              marginBottom: 8,
-              display: "flex",
-              alignItems: "center",
-              gap: 6,
-            }}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#7c3aed" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-            </svg>
-            AI Security Insight
-          </div>
-
-          {!aiInsight && !loading && (
-            <button
-              onClick={handleGenerateInsight}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div
               style={{
-                width: "100%",
-                padding: "10px 14px",
+                width: 8,
+                height: 8,
+                borderRadius: "50%",
+                background: color,
+                boxShadow: `0 0 6px ${color}`,
+              }}
+            />
+            <span
+              style={{
                 fontSize: 13,
                 fontWeight: 600,
-                color: "#fff",
-                background: "linear-gradient(135deg, #7c3aed 0%, #6d28d9 100%)",
-                border: "none",
-                borderRadius: 8,
-                cursor: "pointer",
-                boxShadow: "0 2px 8px rgba(124, 58, 237, 0.25)",
-                transition: "transform 0.15s, box-shadow 0.15s",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                gap: 8,
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.transform = "translateY(-1px)";
-                e.currentTarget.style.boxShadow = "0 4px 12px rgba(124, 58, 237, 0.35)";
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.transform = "translateY(0)";
-                e.currentTarget.style.boxShadow = "0 2px 8px rgba(124, 58, 237, 0.25)";
+                color: "var(--text-primary)",
               }}
             >
-              Generate AI Insight
-            </button>
-          )}
+              Node Details
+            </span>
+          </div>
+          <button
+            onClick={onClose}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              width: 28,
+              height: 28,
+              borderRadius: 6,
+              border: "1px solid var(--border)",
+              background: "transparent",
+              cursor: "pointer",
+              color: "var(--text-muted)",
+              transition: "background 0.15s",
+            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "var(--bg-surface-2)"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "transparent"; }}
+          >
+            <X size={14} />
+          </button>
+        </div>
 
-          {loading && (
+        {/* ── Body ── */}
+        <div style={{ padding: "20px", flex: 1 }}>
+          {/* Severity badge header */}
+          {hasVuln && (
             <div
               style={{
-                display: "flex",
+                display: "inline-flex",
                 alignItems: "center",
-                justifyContent: "center",
-                gap: 10,
-                padding: "12px 16px",
-                background: "#f3f4f6",
-                border: "1px dashed #d1d5db",
-                borderRadius: 8,
-                color: "#4b5563",
-                fontSize: 13,
+                gap: 6,
+                padding: "4px 10px",
+                borderRadius: 99,
+                fontSize: 10,
+                fontWeight: 700,
+                textTransform: "uppercase",
+                letterSpacing: "0.06em",
+                color: "#fff",
+                background: color,
+                marginBottom: 16,
               }}
             >
-              <div
-                style={{
-                  width: 14,
-                  height: 14,
-                  border: "2px solid #9ca3af",
-                  borderTopColor: "#4b5563",
-                  borderRadius: "50%",
-                  animation: "insp-spin 0.8s linear infinite",
-                }}
-              />
-              <style>{`@keyframes insp-spin { to { transform: rotate(360deg) } }`}</style>
-              AI is thinking...
+              <ShieldAlert size={10} />
+              {nodeData.severity}
             </div>
           )}
 
-          {aiInsight && (
-            <div
+          <InfoRow icon={Package} label="Package">
+            <p
               style={{
-                background: "linear-gradient(135deg, #f5f3ff 0%, #edf2f7 100%)",
-                border: "1px solid #e9d5ff",
-                borderRadius: 8,
-                padding: 16,
-                fontSize: 13,
-                color: "#3730a3",
-                lineHeight: 1.6,
-                boxShadow: "inset 0 1px 3px rgba(0,0,0,0.02)",
+                fontSize: 14,
+                fontWeight: 600,
+                color: "var(--text-primary)",
+                wordBreak: "break-word",
               }}
             >
-              <ReactMarkdown components={mdComponents}>
-                {aiInsight}
-              </ReactMarkdown>
+              {nodeData.label}
+            </p>
+          </InfoRow>
+
+          <InfoRow icon={Tag} label="Version">
+            <code
+              style={{
+                fontFamily: "ui-monospace, monospace",
+                fontSize: 12,
+                color: "var(--text-secondary)",
+                background: "var(--bg-surface-2)",
+                padding: "2px 8px",
+                borderRadius: 6,
+                display: "inline-block",
+              }}
+            >
+              {nodeData.version}
+            </code>
+          </InfoRow>
+
+          <InfoRow icon={Hash} label="CVE ID">
+            <p
+              style={{
+                fontSize: 13,
+                color: nodeData.cve ? "#EF4444" : "var(--text-muted)",
+                fontFamily: nodeData.cve ? "ui-monospace, monospace" : "inherit",
+                fontWeight: nodeData.cve ? 600 : 400,
+              }}
+            >
+              {nodeData.cve || "None"}
+            </p>
+          </InfoRow>
+
+          <InfoRow icon={BarChart2} label="Risk Score">
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <span
+                style={{
+                  fontSize: 22,
+                  fontWeight: 700,
+                  color: color,
+                  lineHeight: 1,
+                  fontVariantNumeric: "tabular-nums",
+                }}
+              >
+                {nodeData.riskScore ?? "0"}
+              </span>
+              <span style={{ fontSize: 11, color: "var(--text-muted)" }}>/&nbsp;10</span>
+            </div>
+          </InfoRow>
+
+          <InfoRow icon={FileText} label="Description">
+            <p
+              style={{
+                fontSize: 12,
+                color: "var(--text-muted)",
+                lineHeight: 1.55,
+              }}
+            >
+              {nodeData.description || "No description available"}
+            </p>
+          </InfoRow>
+
+          {/* ── AI Insight section ── */}
+          {hasVuln && (
+            <div style={{ marginTop: 4 }}>
+              <div
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  fontSize: 9,
+                  fontWeight: 700,
+                  letterSpacing: "0.08em",
+                  textTransform: "uppercase",
+                  color: "var(--text-muted)",
+                  marginBottom: 10,
+                }}
+              >
+                <Sparkles size={10} style={{ color: "var(--accent)" }} />
+                AI Security Insight
+              </div>
+
+              {/* Generate button */}
+              {!aiInsight && !loading && (
+                <button
+                  onClick={handleGenerateInsight}
+                  style={{
+                    width: "100%",
+                    padding: "10px 14px",
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: "#fff",
+                    background: "var(--accent)",
+                    border: "none",
+                    borderRadius: 10,
+                    cursor: "pointer",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    gap: 7,
+                    transition: "background 0.15s, transform 0.1s",
+                    boxShadow: "0 1px 6px var(--accent-glow)",
+                  }}
+                  onMouseEnter={(e) => {
+                    e.currentTarget.style.background = "var(--accent-hover)";
+                    e.currentTarget.style.transform = "translateY(-1px)";
+                  }}
+                  onMouseLeave={(e) => {
+                    e.currentTarget.style.background = "var(--accent)";
+                    e.currentTarget.style.transform = "translateY(0)";
+                  }}
+                >
+                  <Sparkles size={14} />
+                  Generate AI Insight
+                </button>
+              )}
+
+              {/* Loading skeleton */}
+              {loading && (
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: 8,
+                    padding: "14px 16px",
+                    background: "var(--bg-surface-2)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 10,
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                    <Loader2
+                      size={13}
+                      style={{ color: "var(--accent)", animation: "spin 1s linear infinite" }}
+                    />
+                    <span style={{ fontSize: 12, color: "var(--text-muted)", fontWeight: 500 }}>
+                      AI is thinking…
+                    </span>
+                  </div>
+                  <div className="skeleton" style={{ height: 10, borderRadius: 4 }} />
+                  <div className="skeleton" style={{ height: 10, borderRadius: 4, width: "85%" }} />
+                  <div className="skeleton" style={{ height: 10, borderRadius: 4, width: "70%" }} />
+                </div>
+              )}
+
+              {/* Result */}
+              {aiInsight && (
+                <div
+                  style={{
+                    background: "var(--bg-surface-2)",
+                    border: "1px solid var(--border)",
+                    borderRadius: 10,
+                    padding: "14px 16px",
+                    lineHeight: 1.6,
+                  }}
+                >
+                  <ReactMarkdown components={mdComponents}>{aiInsight}</ReactMarkdown>
+                </div>
+              )}
             </div>
           )}
         </div>
-      )}
-    </div>
+      </div>
+    </>
   );
 }

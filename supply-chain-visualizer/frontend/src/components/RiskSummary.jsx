@@ -1,8 +1,19 @@
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
+import {
+  AlertTriangle,
+  Flame,
+  AlertCircle,
+  Info,
+  ShieldAlert,
+  Layers,
+  TrendingUp,
+  Activity,
+  FileJson,
+  FileText,
+} from "lucide-react";
 
-import { severityColors } from "../constants/severityColors";
-
+/* ─── ALL COMPUTATION LOGIC IS UNTOUCHED ─── */
 export default function RiskSummary({ data }) {
   if (!data || !data.nodes) return null;
 
@@ -20,37 +31,11 @@ export default function RiskSummary({ data }) {
     const d = n.data || {};
     const sev = d.severity;
     if (sev && sev in severityCounts) severityCounts[sev]++;
-
     const rs = Number(d.riskScore) || 0;
     if (rs > highestRisk) highestRisk = rs;
     cumulativeRisk += rs;
   }
   cumulativeRisk = Number(cumulativeRisk.toFixed(1));
-
-  const metrics = [
-    { label: "Total Dependencies", value: totalDeps, color: "#64748b" },
-    { label: "Vulnerabilities", value: totalVulns, color: "#ef4444" },
-    ...[
-      { label: "Critical", key: "critical" },
-      { label: "High", key: "high" },
-      { label: "Medium", key: "medium" },
-      { label: "Low", key: "low" },
-    ].map((s) => ({
-      label: s.label,
-      value: severityCounts[s.key],
-      color: severityColors[s.key],
-    })),
-    {
-      label: "Highest Risk",
-      value: highestRisk,
-      color: highestRisk >= 7 ? "#ef4444" : highestRisk >= 4 ? "#f97316" : "#3b82f6",
-    },
-    {
-      label: "Cumulative Risk",
-      value: cumulativeRisk,
-      color: cumulativeRisk >= 10 ? "#ef4444" : cumulativeRisk >= 5 ? "#f97316" : "#3b82f6",
-    },
-  ];
 
   const scanDate = new Date().toISOString();
 
@@ -66,6 +51,7 @@ export default function RiskSummary({ data }) {
     ];
   });
 
+  /* unchanged export handlers */
   const exportJSON = () => {
     const report = {
       scanDate,
@@ -88,9 +74,7 @@ export default function RiskSummary({ data }) {
         };
       }),
     };
-    const blob = new Blob([JSON.stringify(report, null, 2)], {
-      type: "application/json",
-    });
+    const blob = new Blob([JSON.stringify(report, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
@@ -101,13 +85,10 @@ export default function RiskSummary({ data }) {
 
   const exportPDF = () => {
     const doc = new jsPDF();
-
     doc.setFontSize(18);
     doc.text("SBOM Security Risk Report", 14, 22);
-
     doc.setFontSize(11);
     doc.text(`Generated: ${new Date(scanDate).toLocaleDateString()}`, 14, 32);
-
     doc.setFontSize(13);
     doc.text("Summary", 14, 46);
     doc.setFontSize(11);
@@ -118,10 +99,7 @@ export default function RiskSummary({ data }) {
       `Critical: ${severityCounts.critical} | High: ${severityCounts.high} | Medium: ${severityCounts.medium} | Low: ${severityCounts.low}`,
       `Highest Risk Score: ${highestRisk} | Cumulative Risk: ${cumulativeRisk}`,
     ];
-    for (const line of summaryLines) {
-      doc.text(line, 14, sy);
-      sy += 8;
-    }
+    for (const line of summaryLines) { doc.text(line, 14, sy); sy += 8; }
 
     const pdfTableRows = vulnerableNodes.map((node) => {
       const d = node.data || {};
@@ -129,19 +107,11 @@ export default function RiskSummary({ data }) {
       if (!d.aiInsight) {
         pdfSummary = "Insight not requested during session";
       } else {
-        const fullInsight = d.aiInsight;
-        const cleanInsight = fullInsight.replace(/[\*#_`]/g, '');
+        const cleanInsight = d.aiInsight.replace(/[\*#_`]/g, "");
         const sentenceMatch = cleanInsight.match(/[^.!?]+[.!?](\s+[^.!?]+[.!?])?/);
         pdfSummary = sentenceMatch ? sentenceMatch[0].trim() : cleanInsight;
       }
-      return [
-        d.label,
-        d.version,
-        d.severity,
-        d.cve || "—",
-        String(d.riskScore ?? "0"),
-        pdfSummary,
-      ];
+      return [d.label, d.version, d.severity, d.cve || "—", String(d.riskScore ?? "0"), pdfSummary];
     });
 
     autoTable(doc, {
@@ -150,85 +120,185 @@ export default function RiskSummary({ data }) {
       body: pdfTableRows,
       styles: { fontSize: 10 },
       headStyles: { fillColor: [30, 41, 59] },
-      columnStyles: {
-        5: { cellWidth: 60 },
-      },
+      columnStyles: { 5: { cellWidth: 60 } },
     });
-
     doc.save("sbom-security-report.pdf");
   };
 
+  /* ── VISUAL ONLY: metric card config ── */
+  const metricCards = [
+    {
+      label: "Total Dependencies",
+      value: totalDeps,
+      icon: Layers,
+      bg: "var(--bg-surface-2)",
+      border: "var(--border)",
+      iconColor: "var(--text-muted)",
+      textColor: "var(--text-primary)",
+    },
+    {
+      label: "Vulnerabilities",
+      value: totalVulns,
+      icon: ShieldAlert,
+      bg: "rgba(239,68,68,0.06)",
+      border: "rgba(239,68,68,0.2)",
+      iconColor: "#EF4444",
+      textColor: "#EF4444",
+    },
+    {
+      label: "Critical",
+      value: severityCounts.critical,
+      icon: Flame,
+      bg: "rgba(239,68,68,0.06)",
+      border: "rgba(239,68,68,0.2)",
+      iconColor: "#EF4444",
+      textColor: "#EF4444",
+    },
+    {
+      label: "High",
+      value: severityCounts.high,
+      icon: AlertTriangle,
+      bg: "rgba(249,115,22,0.06)",
+      border: "rgba(249,115,22,0.2)",
+      iconColor: "#F97316",
+      textColor: "#F97316",
+    },
+    {
+      label: "Medium",
+      value: severityCounts.medium,
+      icon: AlertCircle,
+      bg: "rgba(234,179,8,0.06)",
+      border: "rgba(234,179,8,0.2)",
+      iconColor: "#EAB308",
+      textColor: "#CA8A04",
+    },
+    {
+      label: "Low",
+      value: severityCounts.low,
+      icon: Info,
+      bg: "rgba(59,130,246,0.06)",
+      border: "rgba(59,130,246,0.2)",
+      iconColor: "#3B82F6",
+      textColor: "#3B82F6",
+    },
+    {
+      label: "Highest Risk",
+      value: highestRisk,
+      icon: TrendingUp,
+      bg: highestRisk >= 7
+        ? "rgba(239,68,68,0.06)"
+        : highestRisk >= 4
+        ? "rgba(249,115,22,0.06)"
+        : "var(--bg-surface-2)",
+      border: highestRisk >= 7
+        ? "rgba(239,68,68,0.2)"
+        : highestRisk >= 4
+        ? "rgba(249,115,22,0.2)"
+        : "var(--border)",
+      iconColor: highestRisk >= 7 ? "#EF4444" : highestRisk >= 4 ? "#F97316" : "var(--text-muted)",
+      textColor: highestRisk >= 7 ? "#EF4444" : highestRisk >= 4 ? "#F97316" : "var(--text-primary)",
+    },
+    {
+      label: "Cumulative Risk",
+      value: cumulativeRisk,
+      icon: Activity,
+      bg: cumulativeRisk >= 10
+        ? "rgba(239,68,68,0.06)"
+        : cumulativeRisk >= 5
+        ? "rgba(249,115,22,0.06)"
+        : "var(--bg-surface-2)",
+      border: cumulativeRisk >= 10
+        ? "rgba(239,68,68,0.2)"
+        : cumulativeRisk >= 5
+        ? "rgba(249,115,22,0.2)"
+        : "var(--border)",
+      iconColor: cumulativeRisk >= 10 ? "#EF4444" : cumulativeRisk >= 5 ? "#F97316" : "var(--text-muted)",
+      textColor: cumulativeRisk >= 10 ? "#EF4444" : cumulativeRisk >= 5 ? "#F97316" : "var(--text-primary)",
+    },
+  ];
+
   return (
-    <div style={{ padding: "16px 24px" }}>
+    <div
+      className="px-6 md:px-12"
+      style={{
+        paddingTop: 20,
+        paddingBottom: 16,
+        background: "var(--bg-primary)",
+        borderBottom: "1px solid var(--border)",
+      }}
+    >
+      {/* ── Metrics Grid ── */}
       <div
-        style={{
-          display: "grid",
-          gridTemplateColumns: "repeat(auto-fit, minmax(140px, 1fr))",
-          gap: 12,
-          marginBottom: 16,
-        }}
+        className="grid gap-3"
+        style={{ gridTemplateColumns: "repeat(auto-fit, minmax(130px, 1fr))" }}
       >
-        {metrics.map((m) => (
+        {metricCards.map((m) => (
           <div
             key={m.label}
+            className="rounded-xl px-4 py-3 flex flex-col gap-2"
             style={{
-              borderLeft: `4px solid ${m.color}`,
-              background: "#fff",
-              borderRadius: 8,
-              padding: "14px 16px",
-              boxShadow: "0 1px 4px rgba(0,0,0,0.06)",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
+              background: m.bg,
+              border: `1px solid ${m.border}`,
               minHeight: 80,
             }}
           >
-            <div
-              style={{
-                fontSize: 11,
-                color: "#94a3b8",
-                textTransform: "uppercase",
-                letterSpacing: 1,
-                marginBottom: 4,
-              }}
+            <div className="flex items-center justify-between">
+              <span
+                className="text-[10px] font-semibold uppercase tracking-widest"
+                style={{ color: "var(--text-muted)" }}
+              >
+                {m.label}
+              </span>
+              <m.icon size={13} style={{ color: m.iconColor, opacity: 0.8 }} />
+            </div>
+            <span
+              className="text-2xl font-bold tabular-nums leading-none"
+              style={{ color: m.textColor }}
             >
-              {m.label}
-            </div>
-            <div style={{ fontSize: 24, fontWeight: 700, color: "#1e293b" }}>
               {m.value}
-            </div>
+            </span>
           </div>
         ))}
       </div>
-      <div style={{ display: "flex", gap: 10 }}>
+
+      {/* ── Export buttons ── */}
+      <div className="flex items-center gap-2.5 mt-4">
         <button
           onClick={exportJSON}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold"
           style={{
-            padding: "8px 20px",
-            fontSize: 14,
-            fontWeight: 600,
-            color: "#fff",
-            background: "#1e293b",
+            background: "var(--text-primary)",
+            color: "var(--bg-surface)",
             border: "none",
-            borderRadius: 6,
             cursor: "pointer",
+            transition: "opacity 0.15s",
           }}
+          onMouseEnter={(e) => { e.currentTarget.style.opacity = "0.85"; }}
+          onMouseLeave={(e) => { e.currentTarget.style.opacity = "1"; }}
         >
+          <FileJson size={13} />
           Export JSON
         </button>
         <button
           onClick={exportPDF}
+          className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-xs font-semibold"
           style={{
-            padding: "8px 20px",
-            fontSize: 14,
-            fontWeight: 600,
-            color: "#1e293b",
-            background: "#fff",
-            border: "2px solid #1e293b",
-            borderRadius: 6,
+            background: "transparent",
+            color: "var(--text-primary)",
+            border: "1px solid var(--border)",
             cursor: "pointer",
+            transition: "border-color 0.15s, background 0.15s",
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = "var(--text-muted)";
+            e.currentTarget.style.background = "var(--bg-surface-2)";
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = "var(--border)";
+            e.currentTarget.style.background = "transparent";
           }}
         >
+          <FileText size={13} />
           Export PDF
         </button>
       </div>
