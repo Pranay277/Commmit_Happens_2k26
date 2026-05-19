@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { uploadSbom } from "../api/client";
 
-export default function UploadModal() {
+export default function UploadModal({ onUpload }) {
   const [file, setFile] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
@@ -24,6 +24,7 @@ export default function UploadModal() {
     try {
       const result = await uploadSbom(file);
       setSuccessMessage(result.message);
+      if (onUpload) onUpload(result);
     } catch (err) {
       const detail =
         err.response?.data?.detail || err.message || "Upload failed";
